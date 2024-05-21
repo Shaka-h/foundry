@@ -39,8 +39,11 @@ ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
 
-deploy:
-	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS)
+deployProfileFactory:
+	@forge script script/deployProfileFactory.s.sol:DeployProfileFactory $(NETWORK_ARGS)
+
+deployAlphaConnect:
+	@forge script script/deployProfileFactory.s.sol:DeployProfileFactory $(NETWORK_ARGS)
 
 # For deploying Interactions.s.sol:FundFundMe as well as for Interactions.s.sol:WithdrawFundMe we have to include a sender's address `--sender <ADDRESS>`
 SENDER_ADDRESS := <sender's address>

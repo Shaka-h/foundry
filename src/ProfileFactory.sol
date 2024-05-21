@@ -124,8 +124,8 @@ contract ProfileFactory {
 
     function followProfile(address profileContract) public {
         // Ensure the user is not following the profile already
-        require(!isFollowingProfile(msg.sender, profileContract), "You are already following this profile");
         address profileOwner = profileByAddressContract[profileContract].owner;
+        require(!isFollowingProfile(msg.sender, profileOwner), "You are already following this profile");
 
         // Add the profile to the list of profiles the user follows
         followingProfiles[msg.sender].push(profileOwner);
@@ -137,11 +137,11 @@ contract ProfileFactory {
         emit ProfileFollowed(msg.sender, profileContract);
     }
 
-    function isFollowingProfile(address follower, address profileContract) public view returns (bool) {
+    function isFollowingProfile(address follower, address profileOwner) public view returns (bool) {
         // Check if the follower is already following the profile
         address[] memory followedProfiles = followingProfiles[follower];
         for (uint256 i = 0; i < followedProfiles.length; i++) {
-            if (followedProfiles[i] == profileContract) {
+            if (followedProfiles[i] == profileOwner) {
                 return true;
             }
         }
