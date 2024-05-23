@@ -31,7 +31,6 @@ contract DeployProfileScript is Script {
     }
 }
 
-
 contract profileByAddress is Script {
     function run() external {
         // Address of the deployed ProfileFactory contract
@@ -60,4 +59,3 @@ contract profileByAddress is Script {
         vm.stopBroadcast();
     }
 }
-

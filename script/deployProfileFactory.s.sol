@@ -5,9 +5,8 @@ import {console} from "forge-std/Script.sol";
 import {Script} from "forge-std/Script.sol";
 import {ProfileFactory} from "../src/ProfileFactory.sol";
 
-
 contract DeployProfileFactory is Script {
-    function run() external returns (ProfileFactory){
+    function run() external returns (ProfileFactory) {
         vm.startBroadcast();
 
         ProfileFactory profileContract = new ProfileFactory();
@@ -17,7 +16,7 @@ contract DeployProfileFactory is Script {
         string memory profileUrl = "Miriam Steven Shaka";
 
         console.log("New ProfileFactory Contract Address:", profileContract.getprofileByAddressOwner().ProfileContract);
-                
+
         address newProfileAddress = profileContract.deployNFTProfileContract(tweetContractAddress, username, profileUrl);
 
         console.log("New Profile Contract Address:", newProfileAddress);
@@ -30,11 +29,8 @@ contract DeployProfileFactory is Script {
         console.log("Profile profileUrl:", profile.profileUrl);
         console.log("Profile time:", profile.time);
 
-
-
         vm.stopBroadcast();
-        
+
         return profileContract;
     }
 }
-

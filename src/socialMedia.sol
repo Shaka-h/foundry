@@ -1,5 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -10,6 +11,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract AlphaConnect is ReentrancyGuard, AccessControl {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
+
     Counters.Counter private _PostIds; //total number of Posts ever created
     Counters.Counter private _Postsliked; //total number of likes of a post
     Counters.Counter private _Postsunliked; //total number of dislikes of a post
@@ -79,78 +81,35 @@ contract AlphaConnect is ReentrancyGuard, AccessControl {
     );
 
     //log message (when Post is sold)
-    event NewsCreated(
-        uint256 indexed NewsId,
-        string newsUrl,
-        address creator,
-        uint256 time
-    );
+    event NewsCreated(uint256 indexed NewsId, string newsUrl, address creator, uint256 time);
     event NewsUpdated(uint256 indexed NewsId, string updatedUrl);
     event NewsDeleted(uint256 indexed NewsId);
 
     event commentMade(
-        address profileContract,
-        address commentor,
-        uint256 PostID,
-        uint256 commentID,
-        string commentUrl,
-        uint256 time
+        address profileContract, address commentor, uint256 PostID, uint256 commentID, string commentUrl, uint256 time
     );
 
-    event PostLiked(
-        uint256 indexed postID,
-        address indexed liker,
-        uint256 timestamp,
-        bool like
-    );
+    event PostLiked(uint256 indexed postID, address indexed liker, uint256 timestamp, bool like);
 
     constructor() {
         admin = msg.sender;
     }
 
     /// @notice function to create market Post
-    function createPost(
-        address profileContract,
-        uint256 tokenId
-    ) public nonReentrant {
+    function createPost(address profileContract, uint256 tokenId) public nonReentrant {
         _PostIds.increment(); //add 1 to the total number of Posts ever created
         uint256 PostId = _PostIds.current();
 
-        idPost[PostId] = Post(
-            PostId,
-            tokenId,
-            profileContract,
-            msg.sender,
-            0,
-            0,
-            0,
-            block.timestamp
-        );
+        idPost[PostId] = Post(PostId, tokenId, profileContract, msg.sender, 0, 0, 0, block.timestamp);
 
         //transfer ownership of the nft to the contract itself
-        IERC721(profileContract).transferFrom(
-            msg.sender,
-            address(this),
-            tokenId
-        );
+        IERC721(profileContract).transferFrom(msg.sender, address(this), tokenId);
 
         //log this transaction
-        emit PostCreated(
-            PostId,
-            profileContract,
-            tokenId,
-            msg.sender,
-            0,
-            0,
-            0,
-            block.timestamp
-        );
+        emit PostCreated(PostId, profileContract, tokenId, msg.sender, 0, 0, 0, block.timestamp);
     }
 
-    function commentPost(
-        uint256 postID,
-        string memory commentUrl
-    ) public nonReentrant {
+    function commentPost(uint256 postID, string memory commentUrl) public nonReentrant {
         // Extract necessary details
         address profileContract = idPost[postID].profileContract;
         address commentor = msg.sender;
@@ -173,19 +132,10 @@ contract AlphaConnect is ReentrancyGuard, AccessControl {
             })
         );
 
-        emit commentMade(
-            profileContract,
-            commentor,
-            postID,
-            commentID,
-            commentUrl,
-            block.timestamp
-        );
+        emit commentMade(profileContract, commentor, postID, commentID, commentUrl, block.timestamp);
     }
 
-    function getAllCommentsMadeToPost(
-        uint256 postID
-    ) external view returns (Comment[] memory) {
+    function getAllCommentsMadeToPost(uint256 postID) external view returns (Comment[] memory) {
         Comment[] storage comments = commentsMadeToPost[postID];
         Comment[] memory commentsInfo = new Comment[](comments.length);
 
@@ -269,10 +219,7 @@ contract AlphaConnect is ReentrancyGuard, AccessControl {
         require(postID > 0 && postID <= _PostIds.current(), "Invalid post ID");
 
         // Ensure the user has not already liked the post
-        require(
-            !likedBy[msg.sender][postID],
-            "You have already liked this post"
-        );
+        require(!likedBy[msg.sender][postID], "You have already liked this post");
 
         // If the user has previously unliked the post, decrement the dislike count and increment the like count
         if (unLikedBy[msg.sender][postID]) {
@@ -296,10 +243,7 @@ contract AlphaConnect is ReentrancyGuard, AccessControl {
         require(postID > 0 && postID <= _PostIds.current(), "Invalid post ID");
 
         // Ensure the user has not already liked the post
-        require(
-            !unLikedBy[msg.sender][postID],
-            "You have already unliked this post"
-        );
+        require(!unLikedBy[msg.sender][postID], "You have already unliked this post");
 
         if (likedBy[msg.sender][postID]) {
             // Increment the like count for the post
@@ -322,45 +266,28 @@ contract AlphaConnect is ReentrancyGuard, AccessControl {
 
         uint256 NewsId = _NewsIds.current();
 
-        idNews[NewsId] = News(
-            NewsId,
-            newsUrl,
-            msg.sender,
-            block.timestamp,
-            true
-        );
+        idNews[NewsId] = News(NewsId, newsUrl, msg.sender, block.timestamp, true);
 
         emit NewsCreated(NewsId, newsUrl, msg.sender, block.timestamp);
     }
 
     // Define a function to update news
-    function updateNews(
-        uint256 newsId,
-        string memory updatedUrl
-    ) public onlyOwner {
+    function updateNews(uint256 newsId, string memory updatedUrl) public onlyOwner {
         idNews[newsId].newsUrl = updatedUrl;
         emit NewsUpdated(newsId, updatedUrl);
     }
 
     // Define a function to delete news
     function deleteNews(uint256 newsId) public onlyOwner {
-        require(
-            msg.sender == idNews[newsId].creator,
-            "Only the author can delete the news"
-        );
+        require(msg.sender == idNews[newsId].creator, "Only the author can delete the news");
         _NewsUnPublished.increment(); //add 1 to the total number of Posts ever created
         idNews[newsId].publish = false;
         emit NewsDeleted(newsId);
     }
 
     // Define a function to get news details by ID
-    function getNews(
-        uint256 newsId
-    ) public view returns (uint256, string memory, address, uint256) {
-        require(
-            newsId <= _NewsIds.current(),
-            "News with given ID does not exist"
-        );
+    function getNews(uint256 newsId) public view returns (uint256, string memory, address, uint256) {
+        require(newsId <= _NewsIds.current(), "News with given ID does not exist");
         News memory news = idNews[newsId];
         return (news.NewsId, news.newsUrl, news.creator, news.time);
     }

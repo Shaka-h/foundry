@@ -65,12 +65,13 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile for testUser1
         string memory username1 = "testUser1";
         string memory profileUrl1 = "https://profile1.url";
-        address profileContract1 = profileFactory.deployNFTProfileContract(tweetContractAddress1, username1, profileUrl1);
+        address profileContract1 =
+            profileFactory.deployNFTProfileContract(tweetContractAddress1, username1, profileUrl1);
 
         // Stop impersonating testUser1
         vm.stopPrank();
 
-         // Start impersonating testUser2
+        // Start impersonating testUser2
         vm.startPrank(testUser2);
 
         // Deploy a new NFT profile for testUser2
@@ -79,7 +80,9 @@ contract ProfileFactoryTest is Test {
         profileFactory.deployNFTProfileContract(tweetContractAddress2, username2, profileUrl2);
 
         profileFactory.followProfile(profileContract1);
-        assertTrue(profileFactory.isFollowingProfile(testUser2, testUser1), "testUser2 should be following testUser1's profile");
+        assertTrue(
+            profileFactory.isFollowingProfile(testUser2, testUser1), "testUser2 should be following testUser1's profile"
+        );
 
         // Retrieve followers of testUser1's profile
         address[] memory followers = profileFactory.getAllfollowers(testUser1);
@@ -102,7 +105,8 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile for testUser1
         string memory username1 = "testUser1";
         string memory profileUrl1 = "https://profile1.url";
-        address profileContract1 = profileFactory.deployNFTProfileContract(tweetContractAddress1, username1, profileUrl1);
+        address profileContract1 =
+            profileFactory.deployNFTProfileContract(tweetContractAddress1, username1, profileUrl1);
 
         // Stop impersonating testUser1
         vm.stopPrank();
@@ -136,12 +140,13 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile for testUser1
         string memory username1 = "testUser1";
         string memory profileUrl1 = "https://profile1.url";
-        address profileContract1 = profileFactory.deployNFTProfileContract(tweetContractAddress1, username1, profileUrl1);
+        address profileContract1 =
+            profileFactory.deployNFTProfileContract(tweetContractAddress1, username1, profileUrl1);
 
         // Stop impersonating testUser1
         vm.stopPrank();
 
-         // Start impersonating testUser2
+        // Start impersonating testUser2
         vm.startPrank(testUser2);
 
         // Deploy a new NFT profile for testUser2
@@ -150,12 +155,13 @@ contract ProfileFactoryTest is Test {
         profileFactory.deployNFTProfileContract(tweetContractAddress2, username2, profileUrl2);
 
         profileFactory.followProfile(profileContract1);
-        assertTrue(profileFactory.isFollowingProfile(testUser2, testUser1), "testUser2 should be following testUser1's profile, following not working");
+        assertTrue(
+            profileFactory.isFollowingProfile(testUser2, testUser1),
+            "testUser2 should be following testUser1's profile, following not working"
+        );
 
         // Stop impersonating testUser2
         vm.stopPrank();
-
- 
     }
 
     function testGetProfileByContractAddress() public {
@@ -168,11 +174,12 @@ contract ProfileFactoryTest is Test {
         address contractAddress = profileFactory.deployNFTProfileContract(tweetContractAddress1, username, profileUrl);
 
         // Retrieve profile by username
-        ProfileFactory.MyNFTProfile memory profileByAddress = profileFactory.getprofileByAddressContract(contractAddress);
+        ProfileFactory.MyNFTProfile memory profileByAddress =
+            profileFactory.getprofileByAddressContract(contractAddress);
         ProfileFactory.MyNFTProfile memory profileByUsername = profileFactory.getprofileByUsername(username);
 
         assertEq(profileByAddress.owner, profileByUsername.owner, "profileByAddress does not match profileByUsername");
-        
+
         // Stop impersonating testUser1
         vm.stopPrank();
     }
