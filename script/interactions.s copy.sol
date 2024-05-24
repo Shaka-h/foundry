@@ -34,13 +34,13 @@ contract DeployProfileScript is Script {
 contract profileByAddress is Script {
     function run() external {
         // Address of the deployed ProfileFactory contract
-        address profileContract = 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6;
+        address profileContract = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
 
         // Initialize the contract interface
         ProfileFactory profileFactory = ProfileFactory(profileContract);
 
         // Example profile contract address to query
-        address profileContractAddress = 0x94099942864EA81cCF197E9D71ac53310b1468D8; // Replace with an actual profile contract address
+        address profileContractAddress = 0xCafac3dD18aC6c6e92c921884f9E4176737C052c; // Replace with an actual profile contract address
 
         // Start broadcasting transactions
         vm.startBroadcast();
