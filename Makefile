@@ -45,6 +45,9 @@ deployProfileFactory:
 deployAlphaConnect:
 	@forge script script/deployProfileFactory.s.sol:DeployProfileFactory $(NETWORK_ARGS)
 
+deployDiscussion:
+	@forge script script/deployDiscussion.s.sol:DeployDiscussion $(NETWORK_ARGS)
+
 # For deploying Interactions.s.sol:FundFundMe as well as for Interactions.s.sol:WithdrawFundMe we have to include a sender's address `--sender <ADDRESS>`
 SENDER_ADDRESS := <sender's address>
 
