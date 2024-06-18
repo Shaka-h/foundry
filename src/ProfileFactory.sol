@@ -1,3 +1,25 @@
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// internal & private view & pure functions
+// external & public view & pure functions
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -13,28 +35,29 @@ contract MyProfile is ERC721URIStorage {
 
     // Payable receive function (Solidity version >= 0.6.0)
     receive() external payable {}
-    
+
     using Counters for Counters.Counter;
+
     Counters.Counter private _postIds;
 
     string public username;
     string public profileUrl;
     address public tweetContractAddress;
 
-
     string[] public allProfilePosts;
-    mapping (uint256 => string) profileURIById;
+    mapping(uint256 => string) profileURIById;
 
     event postCreated(string profileURI, uint256 profileId, uint256 time);
 
-    constructor(address _tweetContractAddress, string memory _username, string memory _profileUrl) ERC721("eGa", "eGa") {
+    constructor(address _tweetContractAddress, string memory _username, string memory _profileUrl)
+        ERC721("eGa", "eGa")
+    {
         tweetContractAddress = _tweetContractAddress;
         username = _username;
         profileUrl = _profileUrl;
     }
 
-
-    function createPost(string memory postURI) public returns (uint) {
+    function createPost(string memory postURI) public returns (uint256) {
         _postIds.increment(); // Increment the profile ID counter
         uint256 newPostId = _postIds.current(); // Get the new profile ID
 
@@ -50,15 +73,13 @@ contract MyProfile is ERC721URIStorage {
     }
 
     function getAllPosts() external view returns (string[] memory) {
-        return allProfilePosts; 
+        return allProfilePosts;
     }
 
-    function getPostsURIById (uint256 profileId) external view returns (string memory) {
+    function getPostsURIById(uint256 profileId) external view returns (string memory) {
         return profileURIById[profileId];
     }
 }
-
-
 
 contract ProfileFactory {
     struct MyNFTProfile {
@@ -73,8 +94,8 @@ contract ProfileFactory {
     address[] followers;
     address[] cards;
 
-    mapping(address => MyNFTProfile) public profileByAddressOwner; 
-    mapping(address => MyNFTProfile) public profileByAddressContract; 
+    mapping(address => MyNFTProfile) public profileByAddressOwner;
+    mapping(address => MyNFTProfile) public profileByAddressContract;
     mapping(string => MyNFTProfile) private profileByUsername;
     mapping(string => MyNFTProfile) private profileByUrl;
     mapping(address => address[]) public followingProfiles; // Mapping from user address to the addresses of profiles they follow
@@ -87,37 +108,38 @@ contract ProfileFactory {
     event cardShared(address indexed sender, address indexed profile);
 
     event NFTProfileDeployed(
-        address indexed owner, 
-        address indexed ProfileContract, 
-        string username, string profileUrl, 
-        uint256 time
+        address indexed owner, address indexed ProfileContract, string username, string profileUrl, uint256 time
     );
 
-    function deployNFTProfileContract(address _tweetContractAddress, string memory _username, string memory _profileUrl) external returns (address) {
+    function deployNFTProfileContract(address _tweetContractAddress, string memory _username, string memory _profileUrl)
+        external
+        returns (address)
+    {
         MyProfile ProfileContract = new MyProfile(_tweetContractAddress, _username, _profileUrl);
-        MyNFTProfile memory newProfile = MyNFTProfile(msg.sender, address(ProfileContract), _username, _profileUrl, block.timestamp);
-        
+        MyNFTProfile memory newProfile =
+            MyNFTProfile(msg.sender, address(ProfileContract), _username, _profileUrl, block.timestamp);
+
         profileByAddressContract[address(ProfileContract)] = newProfile;
         profileByAddressOwner[address(msg.sender)] = newProfile;
-        profileByUsername[_username]  = newProfile;
+        profileByUsername[_username] = newProfile;
         allNFTProfiles.push(newProfile);
 
         emit NFTProfileDeployed(msg.sender, address(ProfileContract), _username, _profileUrl, block.timestamp);
         return address(ProfileContract);
     }
 
-    function getprofileByAddressContract (address _contractAddress) external view returns (MyNFTProfile memory) {
+    function getprofileByAddressContract(address _contractAddress) external view returns (MyNFTProfile memory) {
         return profileByAddressContract[_contractAddress];
     }
 
-    function getprofileByUsername (string memory _username) external view returns (MyNFTProfile memory) {
+    function getprofileByUsername(string memory _username) external view returns (MyNFTProfile memory) {
         return profileByUsername[_username];
     }
 
     function getAllDeployedNFTCollections() external view returns (MyNFTProfile[] memory) {
         return allNFTProfiles;
     }
-    
+
     function getprofileByAddressOwner() external view returns (MyNFTProfile memory) {
         return profileByAddressOwner[msg.sender];
     }
