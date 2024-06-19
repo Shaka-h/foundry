@@ -8,12 +8,14 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract MyProfileTest is Test {
     MyProfile myProfile;
-    address tweetContractAddress = address(0x123);
+    address tweetContractAddress = address(0x123);    
+    address discussionContract_Address = address(0x126);
+    address discussionContract_Address2 = address(0x125);
     address testUser = address(0x456);
 
     function setUp() public {
         // Deploy the MyProfile contract
-        myProfile = new MyProfile(tweetContractAddress, "testUser", "https://profile.url");
+        myProfile = new MyProfile(tweetContractAddress, discussionContract_Address, "testUser", "https://profile.url");
     }
 
     function testCreatePost() public {
