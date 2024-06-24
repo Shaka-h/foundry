@@ -8,88 +8,88 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 contract MyProfile is ERC721URIStorage {
-    // Payable fallback function
-    fallback() external payable {}
-
-    // Payable receive function (Solidity version >= 0.6.0)
-    receive() external payable {}
-    
     using Counters for Counters.Counter;
-    Counters.Counter private _postIds;
-    Counters.Counter private _discussionIds;
-
+    Counters.Counter private _tokenIds;
 
     string public username;
     string public profileUrl;
     address public tweetContractAddress;
     address public discussionContractAddress;
 
+    enum TokenType { POST, DISCUSSION }
 
-    string[] public allProfilePosts;
-    string[] public allProfileDiscussions;
-    mapping (uint256 => string) profileURIById;
+    struct ProfileToken {
+        TokenType tokenType;
+        string uri;
+    }
 
-    event postCreated(string profileURI, uint256 profileId, uint256 time);
-    event discussionCreated(string profileURI, uint256 profileId, uint256 time);
+    ProfileToken[] public allProfilePosts;
+    ProfileToken[] public allProfileDiscussions;
+    mapping(uint256 => ProfileToken) public profileTokens;
 
-    constructor(address _tweetContractAddress, address _discussionContractAddress, string memory _username, string memory _profileUrl) ERC721("eGa", "eGa") {
+    event PostCreated(string profileURI, uint256 tokenId, uint256 time);
+    event DiscussionCreated(string profileURI, uint256 tokenId, uint256 time);
+
+    constructor(address _tweetContractAddress, address _discussionContractAddress, string memory _username, string memory _profileUrl) 
+        ERC721("eGa", "eGa") {
         tweetContractAddress = _tweetContractAddress;
         discussionContractAddress = _discussionContractAddress;
         username = _username;
         profileUrl = _profileUrl;
     }
 
+    function createPost(string memory postURI) public returns (uint256) {
+        _tokenIds.increment();
+        uint256 newPostId = _tokenIds.current();
 
-    function createPost(string memory postURI) public returns (uint) {
-        _postIds.increment(); // Increment the profile ID counter
-        uint256 newPostId = _postIds.current(); // Get the new profile ID
+        _mint(msg.sender, newPostId);
+        _setTokenURI(newPostId, postURI);
 
-        _mint(msg.sender, newPostId); // Mint the profile to the caller
-        _setTokenURI(newPostId, postURI); // Set the profile URI
+        ProfileToken memory newProfileToken = ProfileToken(TokenType.POST, postURI);
+        profileTokens[newPostId] = newProfileToken;
+        allProfilePosts.push(newProfileToken);
 
-        allProfilePosts.push(postURI); // Add the new post ID to the array
-        profileURIById[newPostId] = postURI; // Store the profile URI in the mapping
-        setApprovalForAll(tweetContractAddress, true); //grant transaction permission to marketplace
-        emit postCreated(postURI, newPostId, block.timestamp);
+        setApprovalForAll(tweetContractAddress, true);
+        emit PostCreated(postURI, newPostId, block.timestamp);
 
-        return newPostId; // Return the new profile ID
+        return newPostId;
     }
 
-    function getAllPosts() external view returns (string[] memory) {
-        return allProfilePosts; 
+    function createDiscussion(string memory discussionURI) public returns (uint256) {
+        _tokenIds.increment();
+        uint256 newDiscussionId = _tokenIds.current();
+
+        _mint(msg.sender, newDiscussionId);
+        _setTokenURI(newDiscussionId, discussionURI);
+
+        ProfileToken memory newProfileToken = ProfileToken(TokenType.DISCUSSION, discussionURI);
+        profileTokens[newDiscussionId] = newProfileToken;
+        allProfileDiscussions.push(newProfileToken);
+
+        setApprovalForAll(discussionContractAddress, true);
+        emit DiscussionCreated(discussionURI, newDiscussionId, block.timestamp);
+
+        return newDiscussionId;
     }
 
-    function getPostsURIById (uint256 profileId) external view returns (string memory) {
-        return profileURIById[profileId];
+    // function getAllPosts() external view returns (ProfileToken[] memory) {
+    //     return allProfilePosts;
+    // }
+
+    // function getAllDiscussions() external view returns (ProfileToken[] memory) {
+    //     return allProfileDiscussions;
+    // }
+
+    function getTokenType(uint256 tokenId) external view returns (TokenType) {
+        // require(_exists(tokenId), "Token does not exist");
+        return profileTokens[tokenId].tokenType;
     }
 
-    // *****************************************************************************************************************
-
-
-      function createDiscussion(string memory discussionURI) public returns (uint) {
-        _discussionIds.increment(); // Increment the profile ID counter
-        uint256 newdiscussionId = _discussionIds.current(); // Get the new profile ID
-
-        _mint(msg.sender, newdiscussionId); // Mint the profile to the caller
-        _setTokenURI(newdiscussionId, discussionURI); // Set the profile URI
-
-        allProfileDiscussions.push(discussionURI); // Add the new discussion ID to the array
-        profileURIById[newdiscussionId] = discussionURI; // Store the profile URI in the mapping
-        setApprovalForAll(discussionContractAddress, true); //grant transaction permission to marketplace
-        emit discussionCreated(discussionURI, newdiscussionId, block.timestamp);
-
-        return newdiscussionId; // Return the new profile ID
-    }
-
-    function getAlldiscussions() external view returns (string[] memory) {
-        return allProfileDiscussions; 
-    }
-
-    function getDiscussionsURIById (uint256 profileId) external view returns (string memory) {
-        return profileURIById[profileId];
+    function getTokenURIById(uint256 tokenId) public view returns (string memory) {
+        // require(_exists(tokenId), "Token does not exist");
+        return profileTokens[tokenId].uri;
     }
 }
-
 
 
 contract ProfileFactory {

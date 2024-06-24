@@ -2,14 +2,16 @@
 pragma solidity ^0.8.0;
 
 import {Script} from "forge-std/Script.sol";
-import {Discussions} from "../src/Discussion.sol";
+import {DiscussionContract} from "../src/DiscussionContract.sol";
 
 
 contract DeployDiscussion is Script {
-    function run() external returns (Discussions){
+    function run() external returns (DiscussionContract){
         vm.startBroadcast();
+        address discussionContractAddress = 0x5FbDB2315678afecb367f032d93F642f64180aa3; // Replace with an actual tweet contract address
+        address profileContract = 0x5FbDB2315678afecb367f032d93F642f64180aa3; // Replace with an actual tweet contract address
 
-        Discussions discussionContract = new Discussions();
+        DiscussionContract discussionContract = new DiscussionContract(discussionContractAddress, profileContract);
 
         vm.stopBroadcast();
 

@@ -47,3 +47,5 @@ deployAlphaConnect:
 profileByAddress:
 	@forge script script/profileByAddress.s.sol:profileByAddress $(NETWORK_ARGS)
 
+deployDiscussionGround:
+	@forge script script/deployDiscussionGround.s.sol:DeployDiscussionGround $(NETWORK_ARGS)

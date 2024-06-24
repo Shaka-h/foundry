@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 //prevents re-entrancy attacks
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Discussions is ReentrancyGuard, AccessControl {
+contract DiscussionGround is ReentrancyGuard, AccessControl {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     Counters.Counter private _discussionIds; //total number of Discussions ever created

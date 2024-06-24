@@ -45,6 +45,9 @@ deployProfileFactory:
 deployAlphaConnect:
 	@forge script script/deployAlphaConnect.s.sol:DeployAlphaConnect $(NETWORK_ARGS)
 
+deployDiscussionGround:
+	@forge script script/deployDiscussionGround.s.sol:DeployDiscussionGround $(NETWORK_ARGS)
+
 deployDiscussion:
 	@forge script script/deployDiscussion.s.sol:DeployDiscussion $(NETWORK_ARGS)
 

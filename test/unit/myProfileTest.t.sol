@@ -2,12 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import {MyProfile} from "../../src/ProfileFactory.sol";
+import {MyProfile} from "../../src/MyProfile.sol";
+import {PostContract} from "../../src/PostContract.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract MyProfileTest is Test {
     MyProfile myProfile;
+    PostContract myPost;
     address tweetContractAddress = address(0x123);    
     address discussionContract_Address = address(0x126);
     address discussionContract_Address2 = address(0x125);
@@ -15,6 +17,7 @@ contract MyProfileTest is Test {
 
     function setUp() public {
         // Deploy the MyProfile contract
+        myPost = new PostContract(tweetContractAddress, testUser);
         myProfile = new MyProfile(tweetContractAddress, discussionContract_Address, "testUser", "https://profile.url");
     }
 
@@ -26,20 +29,20 @@ contract MyProfileTest is Test {
         string memory postURI = "https://post.uri";
 
         // Create a new post
-        uint256 newPostId = myProfile.createPost(postURI);
+        uint256 newPostId = myPost.createPost(postURI);
 
         // Check if the postId is correct
         assertEq(newPostId, 1, "New post ID should be 1");
 
         // Check if the post URI is stored correctly
-        assertEq(myProfile.tokenURI(newPostId), postURI, "Post URI should match the provided URI");
+        assertEq(myPost.tokenURI(newPostId), postURI, "Post URI should match the provided URI");
 
         // Check if the post is added to the allProfilePosts array
-        string memory storedPostURI = myProfile.allProfilePosts(0);
+        string memory storedPostURI = myPost.allProfilePosts(0);
         assertEq(storedPostURI, postURI, "Stored post URI should match the provided URI");
 
         // Check if the approval is set correctly
-        assertTrue(myProfile.isApprovedForAll(testUser, tweetContractAddress), "Tweet contract should have approval");
+        assertTrue(myPost.isApprovedForAll(testUser, tweetContractAddress), "Tweet contract should have approval");
 
         // Stop impersonating testUser
         vm.stopPrank();
@@ -51,14 +54,14 @@ contract MyProfileTest is Test {
 
         // Create a new post
         string memory postURI1 = "https://post1.uri";
-        myProfile.createPost(postURI1);
+        myPost.createPost(postURI1);
 
         // Create another new post
         string memory postURI2 = "https://post2.uri";
-        myProfile.createPost(postURI2);
+        myPost.createPost(postURI2);
 
         // Get all posts
-        string[] memory allPosts = myProfile.getAllPosts();
+        string[] memory allPosts = myPost.getAllPosts();
 
         // Check if all posts are returned correctly
         assertEq(allPosts.length, 2, "Should return 2 posts");
@@ -75,15 +78,15 @@ contract MyProfileTest is Test {
 
         // Create a new post
         string memory postURI1 = "https://post1.uri";
-        uint256 postId1 = myProfile.createPost(postURI1);
+        uint256 postId1 = myPost.createPost(postURI1);
 
         // Create another new post
         string memory postURI2 = "https://post2.uri";
-        uint256 postId2 = myProfile.createPost(postURI2);
+        uint256 postId2 = myPost.createPost(postURI2);
 
         // Get post URI by ID
-        string memory retrievedPostURI1 = myProfile.getPostsURIById(postId1);
-        string memory retrievedPostURI2 = myProfile.getPostsURIById(postId2);
+        string memory retrievedPostURI1 = myPost.getPostsURIById(postId1);
+        string memory retrievedPostURI2 = myPost.getPostsURIById(postId2);
 
         // Check if the post URIs are returned correctly by ID
         assertEq(retrievedPostURI1, postURI1, "Post URI for first post ID should match the provided URI");

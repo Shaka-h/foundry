@@ -35,7 +35,6 @@ contract ProfileFactoryTest is Test {
         assertEq(profile.owner, testUser1, "Owner should be testUser1");
         assertEq(profile.username, username, "Username should be testUser1");
         assertEq(profile.profileUrl, profileUrl, "Profile URL should match");
-        assertEq(profile.ProfileContract, profileContract, "Profile contract address should match");
 
         // Stop impersonating testUser1
         vm.stopPrank();
