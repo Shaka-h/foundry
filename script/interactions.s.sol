@@ -5,49 +5,63 @@ import "forge-std/Script.sol";
 import {ProfileFactory} from "../src/ProfileFactory.sol";
 import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
 
+contract DeployProfileFactory is Script {
+    function run() external returns (ProfileFactory) {
+        vm.startBroadcast();
 
-contract FundFundMe is Script {
-    function fundFundMe(address mostRecentlyDeployed) public {
-        console.log(mostRecentlyDeployed);
-    }
+        ProfileFactory profileContract = new ProfileFactory();
 
-    function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("ProfileFactory", block.chainid);
-        fundFundMe(mostRecentlyDeployed);
+        // address tweetContractAddress = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512; // Replace with an actual tweet contract address
+        // address discussionContractAddress = 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0; // Replace with an actual tweet contract address
+        // string memory username = "shaka";
+        // string memory profileUrl = "QmeuQj2qCPTXHp2xHSgaB2hTNajReKm4LUqjWroBBFbp7b";
+
+        // console.log("New ProfileFactory Contract Address:", profileContract.getprofileByAddressOwner().ProfileContract);
+
+        // address newProfileAddress = profileContract.deployNFTProfileContract(tweetContractAddress, discussionContractAddress, username, profileUrl);
+
+        // console.log("New Profile Contract Address:", newProfileAddress);
+
+        // ProfileFactory.MyNFTProfile memory profile = profileContract.getprofileByAddressContract(newProfileAddress);
+
+        // console.log("Profile owner:", profile.owner);
+        // console.log("Profile ProfileContract:", profile.ProfileContract);
+        // console.log("Profile username:", profile.username);
+        // console.log("Profile profileUrl:", profile.profileUrl);
+        // console.log("Profile time:", profile.time);
+
+        vm.stopBroadcast();
+
+        return profileContract;
     }
 }
 
+contract profileByAddress is Script {
+       function run() external {
+        // Address of the deployed ProfileFactory contract
+        address profileContract = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
 
-// contract DeployProfileFactory is Script {
-//     function run() external returns (ProfileFactory){
-//         vm.startBroadcast();
+        // Initialize the contract interface
+        ProfileFactory profileFactory = ProfileFactory(profileContract);
 
-//         ProfileFactory profileContract = new ProfileFactory();
+        // Example profile contract address to query
+        address profileContractAddress = 0xCafac3dD18aC6c6e92c921884f9E4176737C052c; // Replace with an actual profile contract address
 
-//         address tweetContractAddress = 0x5FbDB2315678afecb367f032d93F642f64180aa3; // Replace with an actual tweet contract address
-//         string memory username = "shaka";
-//         string memory profileUrl = "Miriam Steven Shaka";
+        // Start broadcasting transactions
+        vm.startBroadcast();
 
-//         console.log("New ProfileFactory Contract Address:", profileContract.getprofileByAddressOwner().ProfileContract);
-                
-//         address newProfileAddress = profileContract.deployNFTProfileContract(tweetContractAddress, username, profileUrl);
+        // Call the function to get the profile by contract address
+        ProfileFactory.MyNFTProfile memory profile = profileFactory
+            .getprofileByAddressContract(profileContractAddress);
 
-//         console.log("New Profile Contract Address:", newProfileAddress);
+        // Log the profile details
+        console.log("Profile owner:", profile.owner);
+        console.log("Profile ProfileContract:", profile.ProfileContract);
+        console.log("Profile username:", profile.username);
+        console.log("Profile profileUrl:", profile.profileUrl);
+        console.log("Profile time:", profile.time);
 
-//         ProfileFactory.MyNFTProfile memory profile = profileContract.getprofileByAddressContract(newProfileAddress);
-
-//         console.log("Profile owner:", profile.owner);
-//         console.log("Profile ProfileContract:", profile.ProfileContract);
-//         console.log("Profile username:", profile.username);
-//         console.log("Profile profileUrl:", profile.profileUrl);
-//         console.log("Profile time:", profile.time);
-
-
-
-//         vm.stopBroadcast();
-        
-//         return profileContract;
-//     }
-// }
-
-
+        // Stop broadcasting transactions
+        vm.stopBroadcast();
+    }
+}

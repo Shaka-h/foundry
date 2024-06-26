@@ -13,6 +13,7 @@ contract MyProfile is ERC721URIStorage {
 
     string public username;
     string public profileUrl;
+    uint256 public since;
     address public tweetContractAddress;
     address public discussionContractAddress;
 
@@ -30,12 +31,12 @@ contract MyProfile is ERC721URIStorage {
     event PostCreated(string profileURI, uint256 tokenId, uint256 time);
     event DiscussionCreated(string profileURI, uint256 tokenId, uint256 time);
 
-    constructor(address _tweetContractAddress, address _discussionContractAddress, string memory _username, string memory _profileUrl) 
+    constructor(address _tweetContractAddress, address _discussionContractAddress, string memory _username) 
         ERC721("eGa", "eGa") {
         tweetContractAddress = _tweetContractAddress;
         discussionContractAddress = _discussionContractAddress;
         username = _username;
-        profileUrl = _profileUrl;
+        since = block.timestamp;
     }
 
     function createPost(string memory postURI) public returns (uint256) {
@@ -71,14 +72,6 @@ contract MyProfile is ERC721URIStorage {
 
         return newDiscussionId;
     }
-
-    // function getAllPosts() external view returns (ProfileToken[] memory) {
-    //     return allProfilePosts;
-    // }
-
-    // function getAllDiscussions() external view returns (ProfileToken[] memory) {
-    //     return allProfileDiscussions;
-    // }
 
     function getTokenType(uint256 tokenId) external view returns (TokenType) {
         // require(_exists(tokenId), "Token does not exist");
@@ -125,9 +118,10 @@ contract ProfileFactory {
         string profileUrl, 
         uint256 time
     );
+    event NFTProfileUpdated(address indexed owner, address profileContractAddress, string username, string profileUrl, uint256 timestamp);
 
     function deployNFTProfileContract(address _tweetContractAddress, address _discussionContractAddress, string memory _username, string memory _profileUrl) external returns (address) {
-        MyProfile ProfileContract = new MyProfile(_tweetContractAddress, _discussionContractAddress, _username, _profileUrl);
+        MyProfile ProfileContract = new MyProfile(_tweetContractAddress, _discussionContractAddress, _username);
         MyNFTProfile memory newProfile = MyNFTProfile(msg.sender, address(ProfileContract), _username, _profileUrl, block.timestamp);
         
         profileByAddressContract[address(ProfileContract)] = newProfile;
@@ -138,6 +132,19 @@ contract ProfileFactory {
         emit NFTProfileDeployed(msg.sender, address(ProfileContract), _username, _profileUrl, block.timestamp);
         return address(ProfileContract);
     }
+
+    function editProfile(
+        address profileContract,
+        string memory _profileUrl
+    ) external {
+        require(profileByAddressContract[profileContract].owner == msg.sender, "Only the owner can update the profile");
+
+        profileByAddressContract[profileContract].profileUrl = _profileUrl;
+        profileByAddressContract[profileContract].time = block.timestamp;
+
+        emit NFTProfileUpdated(msg.sender, profileContract, profileByAddressContract[profileContract].username, profileByAddressContract[profileContract].profileUrl, block.timestamp);
+    }
+
 
     function getprofileByAddressContract (address _contractAddress) external view returns (MyNFTProfile memory) {
         return profileByAddressContract[_contractAddress];
@@ -151,14 +158,16 @@ contract ProfileFactory {
         return allNFTProfiles;
     }
     
-    function getprofileByAddressOwner() external view returns (MyNFTProfile memory) {
-        return profileByAddressOwner[msg.sender];
-    }
+    // function getprofileByAddressOwner() external view returns (MyNFTProfile memory) {
+    //     return profileByAddressOwner[msg.sender];
+    // }
 
-    function followProfile(address profileContract) public {
+    function followProfile(address profileAddress) public {
         // Ensure the user is not following the profile already
-        require(!isFollowingProfile(msg.sender, profileContract), "You are already following this profile");
-        address profileOwner = profileByAddressContract[profileContract].owner;
+        require(profileByAddressOwner[profileAddress].owner != msg.sender, "Can't follow your own profile");
+        require(!isFollowingProfile(profileAddress), "You are already following this profile");
+        
+        address profileOwner = profileByAddressOwner[profileAddress].owner;
 
         // Add the profile to the list of profiles the user follows
         followingProfiles[msg.sender].push(profileOwner);
@@ -167,14 +176,14 @@ contract ProfileFactory {
         followersProfiles[profileOwner].push(msg.sender);
 
         // Emit an event to log the profile follow
-        emit ProfileFollowed(msg.sender, profileContract);
+        emit ProfileFollowed(msg.sender, profileAddress);
     }
 
-    function isFollowingProfile(address follower, address profileContract) public view returns (bool) {
+    function isFollowingProfile(address profileAddress) public view returns (bool) {
         // Check if the follower is already following the profile
-        address[] memory followedProfiles = followingProfiles[follower];
+        address[] memory followedProfiles = followingProfiles[msg.sender];
         for (uint256 i = 0; i < followedProfiles.length; i++) {
-            if (followedProfiles[i] == profileContract) {
+            if (followedProfiles[i] == profileAddress) {
                 return true;
             }
         }
@@ -203,16 +212,29 @@ contract ProfileFactory {
         return followingInfo;
     }
 
-    function shareCard(address profileContract) public {
+    function shareCard(address profileAddress) public {
         // Ensure the user is not following the profile already
-        // require(!isFollowingProfile(msg.sender, profileContract), "You are already sent your card to this profile");
-        address profileOwner = profileByAddressContract[profileContract].owner;
+        require(profileByAddressOwner[profileAddress].owner != msg.sender, "You cant share profile to yourself");
+        require(!isCardShared(profileAddress), "You are shared card with this profile");
+
+        address profileOwner = profileByAddressContract[profileAddress].owner;
 
         // Add the card to the list of businessCards of the user to be sent
         businessCards[profileOwner].push(msg.sender);
 
         // Emit an event to log the profile follow
-        emit cardShared(msg.sender, profileContract);
+        emit cardShared(msg.sender, profileAddress);
+    }
+
+    function isCardShared(address profileAddress) public view returns (bool) {
+        // Check if the follower is already following the profile
+        address[] memory sharedCards = businessCards[msg.sender];
+        for (uint256 i = 0; i < sharedCards.length; i++) {
+            if (sharedCards[i] == profileAddress) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function getMybusinessCard() external view returns (address[] memory) {

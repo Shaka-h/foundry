@@ -84,7 +84,7 @@ contract ProfileFactoryTest is Test {
 
         profileFactory.followProfile(profileContract1);
         assertTrue(
-            profileFactory.isFollowingProfile(testUser2, testUser1), "testUser2 should be following testUser1's profile"
+            profileFactory.isFollowingProfile(testUser1), "testUser2 should be following testUser1's profile"
         );
 
         // Retrieve followers of testUser1's profile
@@ -159,7 +159,7 @@ contract ProfileFactoryTest is Test {
 
         profileFactory.followProfile(profileContract1);
         assertTrue(
-            profileFactory.isFollowingProfile(testUser2, testUser1),
+            profileFactory.isFollowingProfile(testUser1),
             "testUser2 should be following testUser1's profile, following not working"
         );
 
