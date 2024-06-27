@@ -36,6 +36,8 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
         uint256 discussionID;
         uint256 answerID;
         string answerUrl;
+        uint256 like;
+        uint256 dislike;
         uint256 time;
     }
 
@@ -78,6 +80,13 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
 
     event DiscussionLiked(
         uint256 indexed discussionID,
+        address indexed liker,
+        uint256 timestamp,
+        bool like
+    );
+
+    event AnswerLiked(
+        uint256 indexed answerID,
         address indexed liker,
         uint256 timestamp,
         bool like
@@ -132,6 +141,7 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
     ) public nonReentrant {
         // Extract necessary details
         address profileContract = idDiscussion[discussionID].profileContract;
+
         address answeror = msg.sender;
 
         // Increment Answer counter for this Discussion
@@ -148,6 +158,8 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
                 discussionID: discussionID,
                 answerID: answerID,
                 answerUrl: answerUrl,
+                like: 0,
+                dislike: 0,
                 time: block.timestamp
             })
         );
@@ -163,16 +175,52 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
     }
 
 
-    // function getAllAnswersMadeToDiscussion(uint256 discussionID)
-    //     external
-    //     view
-    //     returns (Answer[] memory)
-    // {
-    //     Answer[] storage Answers = AnswersMadeToDiscussion[discussionID];
-    //     Answer[] memory AnswersInfo = new Answer[](Answers.length);
+    function getAllAnswersMadeToDiscussion(uint256 discussionID)
+        external
+        view
+        returns (Answer[] memory)
+    {
+        Answer[] storage Answers = AnswersMadeToDiscussion[discussionID];
+        Answer[] memory AnswersInfo = new Answer[](Answers.length);
 
-    //     for (uint256 i = 0; i < Answers.length; i++) {
-    //         AnswersInfo[i] = Answer({
+        for (uint256 i = 0; i < Answers.length; i++) {
+            AnswersInfo[i] = Answer({
+                profileContract: Answers[i].profileContract,
+                answeror: Answers[i].answeror,
+                discussionID: Answers[i].discussionID,
+                answerID: Answers[i].answerID,
+                answerUrl: Answers[i].answerUrl,
+                like: Answers[i].like,
+                dislike: Answers[i].dislike,
+                time: Answers[i].time
+            });
+        }
+
+        return AnswersInfo;
+    }
+
+    // function getAllAnswersMadeToDiscussion(
+    //     uint256 discussionID,
+    //     uint256 page,
+    //     uint256 limit
+    // ) external view returns (Answer[] memory) {
+    //     Answer[] storage Answers = AnswersMadeToDiscussion[discussionID];
+    //     uint256 start = page * limit;
+    //     uint256 end = start + limit;
+
+    //     // Ensure the start index is within the bounds of the array
+    //     require(start < Answers.length, "Page out of range");
+
+    //     // Adjust the end index if it exceeds the array length
+    //     if (end > Answers.length) {
+    //         end = Answers.length;
+    //     }
+
+    //     // Create a new array to hold the paginated results
+    //     Answer[] memory AnswersInfo = new Answer[](end - start);
+
+    //     for (uint256 i = start; i < end; i++) {
+    //         AnswersInfo[i - start] = Answer({
     //             profileContract: Answers[i].profileContract,
     //             answeror: Answers[i].answeror,
     //             discussionID: Answers[i].discussionID,
@@ -184,40 +232,6 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
 
     //     return AnswersInfo;
     // }
-
-    function getAllAnswersMadeToDiscussion(
-        uint256 discussionID,
-        uint256 page,
-        uint256 limit
-    ) external view returns (Answer[] memory) {
-        Answer[] storage Answers = AnswersMadeToDiscussion[discussionID];
-        uint256 start = page * limit;
-        uint256 end = start + limit;
-
-        // Ensure the start index is within the bounds of the array
-        require(start < Answers.length, "Page out of range");
-
-        // Adjust the end index if it exceeds the array length
-        if (end > Answers.length) {
-            end = Answers.length;
-        }
-
-        // Create a new array to hold the paginated results
-        Answer[] memory AnswersInfo = new Answer[](end - start);
-
-        for (uint256 i = start; i < end; i++) {
-            AnswersInfo[i - start] = Answer({
-                profileContract: Answers[i].profileContract,
-                answeror: Answers[i].answeror,
-                discussionID: Answers[i].discussionID,
-                answerID: Answers[i].answerID,
-                answerUrl: Answers[i].answerUrl,
-                time: Answers[i].time
-            });
-        }
-
-        return AnswersInfo;
-    }
 
     /// @notice fetch list of NFTS owned/bought by this user
     function fetchMyDiscussionsCreated()
@@ -294,6 +308,11 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
         return Discussions;
     }
 
+    function getADiscussion(uint256 discussionId) public view returns (Discussion memory) {
+        // require(_exists(tokenId), "Token does not exist");
+        return idDiscussion[discussionId];
+    }
+
     function likeDiscussion(uint256 discussionID) public nonReentrant {
         // Ensure the Discussion exists
         require(
@@ -352,6 +371,68 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
         // Emit an event to log the like
         emit DiscussionLiked(discussionID, msg.sender, block.timestamp, false);
     }
+
+
+    function likeAnswer(uint256 answerID, uint256 discussionId) public nonReentrant {
+        
+        // Ensure the Discussion exists
+        require(
+            answerID > 0 && answerID <= AnswersMadeToDiscussion[discussionId].length,
+            "Invalid answer ID"
+        );
+
+        // Ensure the user has not already liked the Discussion
+        require(
+            !likedBy[msg.sender][answerID],
+            "You have already liked this Discussion"
+        );
+
+        // If the user has previously unliked the Discussion, decrement the dislike count and increment the like count
+        if (unLikedBy[msg.sender][answerID]) {
+            idAnswer[answerID].dislike--;
+            idAnswer[answerID].like++;
+            unLikedBy[msg.sender][answerID] = false;
+        } else {
+            // Increment the like count for the Discussion
+            idAnswer[answerID].like++;
+        }
+
+        // Mark the Discussion as liked by the user
+        likedBy[msg.sender][answerID] = true;
+
+        // Emit an event to log the like
+        emit AnswerLiked(answerID, msg.sender, block.timestamp, true);
+    }
+
+    function unLikeAnswer(uint256 answerID, uint256 discussionId) public nonReentrant {
+        // Ensure the Discussion exists
+        require(
+            answerID > 0 && answerID <= AnswersMadeToDiscussion[discussionId].length,
+            "Invalid answer ID"
+        );
+
+        // Ensure the user has not already liked the Discussion
+        require(
+            !unLikedBy[msg.sender][answerID],
+            "You have already unliked this Discussion"
+        );
+
+        if (likedBy[msg.sender][answerID]) {
+            // Increment the like count for the Discussion
+            idAnswer[answerID].like--;
+            idAnswer[answerID].dislike++;
+            // Mark the Discussion as liked by the user
+            likedBy[msg.sender][answerID] = false;
+        } else {
+            idAnswer[answerID].dislike++;
+        }
+
+        unLikedBy[msg.sender][answerID] = true;
+
+        // Emit an event to log the like
+        emit AnswerLiked(answerID, msg.sender, block.timestamp, false);
+    }
+
 
     // Modifier to restrict access to the owner of the contract
     modifier onlyOwner() {

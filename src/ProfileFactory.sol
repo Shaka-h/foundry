@@ -214,23 +214,21 @@ contract ProfileFactory {
 
     function shareCard(address profileAddress) public {
         // Ensure the user is not following the profile already
-        require(profileByAddressOwner[profileAddress].owner != msg.sender, "You cant share profile to yourself");
-        require(!isCardShared(profileAddress), "You are shared card with this profile");
-
-        address profileOwner = profileByAddressContract[profileAddress].owner;
+        require(profileAddress != msg.sender, "You cant share profile to yourself");
+        require(!isCardShared(profileAddress), "You have shared card with this profile");
 
         // Add the card to the list of businessCards of the user to be sent
-        businessCards[profileOwner].push(msg.sender);
+        businessCards[profileAddress].push(msg.sender);
 
         // Emit an event to log the profile follow
         emit cardShared(msg.sender, profileAddress);
     }
 
     function isCardShared(address profileAddress) public view returns (bool) {
-        // Check if the follower is already following the profile
-        address[] memory sharedCards = businessCards[msg.sender];
+
+        address[] memory sharedCards = businessCards[profileAddress];
         for (uint256 i = 0; i < sharedCards.length; i++) {
-            if (sharedCards[i] == profileAddress) {
+            if (sharedCards[i] == msg.sender) {
                 return true;
             }
         }
