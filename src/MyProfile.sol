@@ -31,5 +31,3 @@ contract MyProfile is ERC721URIStorage {
     }
 
 }
-
-

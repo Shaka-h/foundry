@@ -48,8 +48,10 @@ deployAlphaConnect:
 deployDiscussionGround:
 	@forge script script/deployDiscussionGround.s.sol:DeployDiscussionGround $(NETWORK_ARGS)
 
-deployDiscussion:
-	@forge script script/deployDiscussion.s.sol:DeployDiscussion $(NETWORK_ARGS)
+deployTutorialGround:
+	@forge script script/deployTutorialGround.s.sol:DeployTutorialGround $(NETWORK_ARGS)
+
+
 
 # For deploying Interactions.s.sol:FundFundMe as well as for Interactions.s.sol:WithdrawFundMe we have to include a sender's address `--sender <ADDRESS>`
 SENDER_ADDRESS := <sender's address>

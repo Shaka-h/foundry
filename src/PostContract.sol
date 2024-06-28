@@ -57,5 +57,3 @@ contract PostContract is ERC721URIStorage {
         return profileURIById[profileId];
     }
 }
-
-

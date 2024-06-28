@@ -16,8 +16,9 @@ contract MyProfile is ERC721URIStorage {
     uint256 public since;
     address public tweetContractAddress;
     address public discussionContractAddress;
+    address public tutorialContractAddress;
 
-    enum TokenType { POST, DISCUSSION }
+    enum TokenType { POST, DISCUSSION, TUTORIAL }
 
     struct ProfileToken {
         TokenType tokenType;
@@ -30,11 +31,13 @@ contract MyProfile is ERC721URIStorage {
 
     event PostCreated(string profileURI, uint256 tokenId, uint256 time);
     event DiscussionCreated(string profileURI, uint256 tokenId, uint256 time);
+    event TutorialCreated(string profileURI, uint256 tokenId, uint256 time);
 
-    constructor(address _tweetContractAddress, address _discussionContractAddress, string memory _username) 
+    constructor(address _tweetContractAddress, address _discussionContractAddress, address _tutorialContractAddress, string memory _username) 
         ERC721("eGa", "eGa") {
         tweetContractAddress = _tweetContractAddress;
         discussionContractAddress = _discussionContractAddress;
+        tutorialContractAddress = _tutorialContractAddress;
         username = _username;
         since = block.timestamp;
     }
@@ -71,6 +74,23 @@ contract MyProfile is ERC721URIStorage {
         emit DiscussionCreated(discussionURI, newDiscussionId, block.timestamp);
 
         return newDiscussionId;
+    }
+
+    function createTutorail(string memory tutorialURI) public returns (uint256) {
+        _tokenIds.increment();
+        uint256 newTutorialId = _tokenIds.current();
+
+        _mint(msg.sender, newTutorialId);
+        _setTokenURI(newTutorialId, tutorialURI);
+
+        ProfileToken memory newProfileToken = ProfileToken(TokenType.TUTORIAL, tutorialURI);
+        profileTokens[newTutorialId] = newProfileToken;
+        allProfileDiscussions.push(newProfileToken);
+
+        setApprovalForAll(discussionContractAddress, true);
+        emit DiscussionCreated(tutorialURI, newTutorialId, block.timestamp);
+
+        return newTutorialId;
     }
 
     function getTokenType(uint256 tokenId) external view returns (TokenType) {
@@ -120,8 +140,8 @@ contract ProfileFactory {
     );
     event NFTProfileUpdated(address indexed owner, address profileContractAddress, string username, string profileUrl, uint256 timestamp);
 
-    function deployNFTProfileContract(address _tweetContractAddress, address _discussionContractAddress, string memory _username, string memory _profileUrl) external returns (address) {
-        MyProfile ProfileContract = new MyProfile(_tweetContractAddress, _discussionContractAddress, _username);
+    function deployNFTProfileContract(address _tweetContractAddress, address _discussionContractAddress, address _tutorialContractAddress, string memory _username, string memory _profileUrl) external returns (address) {
+        MyProfile ProfileContract = new MyProfile(_tweetContractAddress, _discussionContractAddress, _tutorialContractAddress, _username);
         MyNFTProfile memory newProfile = MyNFTProfile(msg.sender, address(ProfileContract), _username, _profileUrl, block.timestamp);
         
         profileByAddressContract[address(ProfileContract)] = newProfile;

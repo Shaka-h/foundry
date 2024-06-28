@@ -8,6 +8,8 @@ import {DeployProfileFactory} from "../../script/deployProfileFactory.s.sol";
 
 contract ProfileFactoryTest is Test {
     ProfileFactory profileFactory;
+    address tutorialContract_Address1 = address(0x127);
+    address tutorialContract_Address2 = address(0x128);
     address discussionContract_Address1 = address(0x126);
     address discussionContract_Address2 = address(0x125);
     address tweetContractAddress1 = address(0x123);
@@ -28,7 +30,7 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile
         string memory username = "testUser1";
         string memory profileUrl = "https://profile1.url";
-        address profileContract = profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, username, profileUrl);
+        address profileContract = profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, tutorialContract_Address1, username, profileUrl);
 
         // Verify the profile was deployed correctly
         ProfileFactory.MyNFTProfile memory profile = profileFactory.getprofileByAddressContract(profileContract);
@@ -69,7 +71,7 @@ contract ProfileFactoryTest is Test {
         string memory username1 = "testUser1";
         string memory profileUrl1 = "https://profile1.url";
         address profileContract1 =
-            profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, username1, profileUrl1);
+            profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, tutorialContract_Address1, username1, profileUrl1);
 
         // Stop impersonating testUser1
         vm.stopPrank();
@@ -80,7 +82,7 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile for testUser2
         string memory username2 = "testUser2";
         string memory profileUrl2 = "https://profile1.url";
-        profileFactory.deployNFTProfileContract(tweetContractAddress2, discussionContract_Address2, username2, profileUrl2);
+        profileFactory.deployNFTProfileContract(tweetContractAddress2, discussionContract_Address2, tutorialContract_Address2, username2, profileUrl2);
 
         profileFactory.followProfile(profileContract1);
         assertTrue(
@@ -109,7 +111,7 @@ contract ProfileFactoryTest is Test {
         string memory username1 = "testUser1";
         string memory profileUrl1 = "https://profile1.url";
         address profileContract1 =
-            profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, username1, profileUrl1);
+            profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, tutorialContract_Address1, username1, profileUrl1);
 
         // Stop impersonating testUser1
         vm.stopPrank();
@@ -120,7 +122,7 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile for testUser2
         string memory username2 = "testUser2";
         string memory profileUrl2 = "https://profile2.url";
-        profileFactory.deployNFTProfileContract(tweetContractAddress2, discussionContract_Address2, username2, profileUrl2);
+        profileFactory.deployNFTProfileContract(tweetContractAddress2, discussionContract_Address2, tutorialContract_Address2, username2, profileUrl2);
 
         // Share business card with testUser1's profile
         profileFactory.shareCard(profileContract1);
@@ -144,7 +146,7 @@ contract ProfileFactoryTest is Test {
         string memory username1 = "testUser1";
         string memory profileUrl1 = "https://profile1.url";
         address profileContract1 =
-            profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, username1, profileUrl1);
+            profileFactory.deployNFTProfileContract(tweetContractAddress1, discussionContract_Address1, tutorialContract_Address1, username1, profileUrl1);
 
         // Stop impersonating testUser1
         vm.stopPrank();
@@ -155,7 +157,7 @@ contract ProfileFactoryTest is Test {
         // Deploy a new NFT profile for testUser2
         string memory username2 = "testUser2";
         string memory profileUrl2 = "https://profile1.url";
-        profileFactory.deployNFTProfileContract(tweetContractAddress2, discussionContract_Address2, username2, profileUrl2);
+        profileFactory.deployNFTProfileContract(tweetContractAddress2, discussionContract_Address2, tutorialContract_Address2, username2, profileUrl2);
 
         profileFactory.followProfile(profileContract1);
         assertTrue(

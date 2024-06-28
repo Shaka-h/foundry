@@ -41,21 +41,15 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
         uint256 time;
     }
 
-    struct Likes {
-        uint256 discussionID;
-        address liker;
-        uint256 timestamp;
-        bool like;
-    }
-
     //a way to access values of the Discussion and Answer struct above by passing an integer of the discussionID
     mapping(uint256 => Discussion) public idDiscussion;
     mapping(uint256 => Answer) public idAnswer;
     mapping(uint256 => Answer) public DiscussionAnswer;
     mapping(uint256 => Answer[]) public AnswersMadeToDiscussion;
-    mapping(uint256 => Likes[]) likeOfDiscussion;
     mapping(address => mapping(uint256 => bool)) public likedBy;
     mapping(address => mapping(uint256 => bool)) public unLikedBy;
+    mapping(address => mapping(uint256 => bool)) public answerLikedBy;
+    mapping(address => mapping(uint256 => bool)) public answerUnLikedBy;
 
     //log message (when Discussion is sold)
     event DiscussionCreated(
@@ -374,65 +368,65 @@ contract DiscussionGround is ReentrancyGuard, AccessControl {
 
 
     function likeAnswer(uint256 answerID, uint256 discussionId) public nonReentrant {
-        
         // Ensure the Discussion exists
         require(
             answerID > 0 && answerID <= AnswersMadeToDiscussion[discussionId].length,
             "Invalid answer ID"
         );
 
-        // Ensure the user has not already liked the Discussion
+        // Ensure the user has not already liked the answer
         require(
-            !likedBy[msg.sender][answerID],
-            "You have already liked this Discussion"
+            !answerLikedBy[msg.sender][answerID],
+            "You have already liked this answer"
         );
 
-        // If the user has previously unliked the Discussion, decrement the dislike count and increment the like count
-        if (unLikedBy[msg.sender][answerID]) {
-            idAnswer[answerID].dislike--;
-            idAnswer[answerID].like++;
-            unLikedBy[msg.sender][answerID] = false;
+        // If the user has previously unliked the answer, decrement the dislike count and increment the like count
+        if (answerUnLikedBy[msg.sender][answerID]) {
+            AnswersMadeToDiscussion[discussionId][answerID - 1].dislike--;
+            AnswersMadeToDiscussion[discussionId][answerID - 1].like++;
+            answerUnLikedBy[msg.sender][answerID] = false;
         } else {
-            // Increment the like count for the Discussion
-            idAnswer[answerID].like++;
+            // Increment the like count for the answer
+            AnswersMadeToDiscussion[discussionId][answerID - 1].like++;
         }
 
-        // Mark the Discussion as liked by the user
-        likedBy[msg.sender][answerID] = true;
+        // Mark the answer as liked by the user
+        answerLikedBy[msg.sender][answerID] = true;
 
         // Emit an event to log the like
         emit AnswerLiked(answerID, msg.sender, block.timestamp, true);
     }
 
     function unLikeAnswer(uint256 answerID, uint256 discussionId) public nonReentrant {
-        // Ensure the Discussion exists
+        // Ensure the answer exists
         require(
             answerID > 0 && answerID <= AnswersMadeToDiscussion[discussionId].length,
             "Invalid answer ID"
         );
 
-        // Ensure the user has not already liked the Discussion
+        // Ensure the user has not already unliked the answer
         require(
-            !unLikedBy[msg.sender][answerID],
-            "You have already unliked this Discussion"
+            !answerUnLikedBy[msg.sender][answerID],
+            "You have already unliked this answer"
         );
 
-        if (likedBy[msg.sender][answerID]) {
-            // Increment the like count for the Discussion
-            idAnswer[answerID].like--;
-            idAnswer[answerID].dislike++;
-            // Mark the Discussion as liked by the user
-            likedBy[msg.sender][answerID] = false;
+        if (answerLikedBy[msg.sender][answerID]) {
+            // Decrement the like count for the answer
+            AnswersMadeToDiscussion[discussionId][answerID - 1].like--;
+            AnswersMadeToDiscussion[discussionId][answerID - 1].dislike++;
+            // Mark the answer as not liked by the user
+            answerLikedBy[msg.sender][answerID] = false;
         } else {
-            idAnswer[answerID].dislike++;
+            // Increment the dislike count for the answer
+            AnswersMadeToDiscussion[discussionId][answerID - 1].dislike++;
         }
 
-        unLikedBy[msg.sender][answerID] = true;
+        // Mark the answer as unliked by the user
+        answerUnLikedBy[msg.sender][answerID] = true;
 
-        // Emit an event to log the like
+        // Emit an event to log the unlike action
         emit AnswerLiked(answerID, msg.sender, block.timestamp, false);
     }
-
 
     // Modifier to restrict access to the owner of the contract
     modifier onlyOwner() {
