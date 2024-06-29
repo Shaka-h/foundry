@@ -87,7 +87,7 @@ contract MyProfile is ERC721URIStorage {
         profileTokens[newTutorialId] = newProfileToken;
         allProfileDiscussions.push(newProfileToken);
 
-        setApprovalForAll(discussionContractAddress, true);
+        setApprovalForAll(tutorialContractAddress, true);
         emit DiscussionCreated(tutorialURI, newTutorialId, block.timestamp);
 
         return newTutorialId;
